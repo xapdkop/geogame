@@ -1,3 +1,3 @@
-# geogame
-GeoGame
-https://gelltorn.github.io/geogame/
+# GeoGame
+
+## [Play GeoGame](https://xapdkop.github.io/geogame/)

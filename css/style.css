@@ -139,20 +139,3 @@ main {
 .button {
 	box-shadow: 1px 2px 1px #000;
 }
-
-/* гм фулскрин */
-/*.gm-fullscreen-control {
-	display: none;
-}*/
-/* гм стритвью */
-/*.gm-svpc {
-	display: none;
-}*/
-/* гм тип карты */
-/*.gm-style-mtc {
-	display: none;
-}*/
-/* гм масштаб */
-/*.gm-bundled-control-on-bottom {
-	display: none;
-}*/
