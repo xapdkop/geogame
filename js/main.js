@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 window.onload = () => {
 	pjs();
@@ -52,9 +52,7 @@ function initMap() {
 		fullscreenControl: false,
 	});
 
-	listener = google.maps.event.addListener(map, 'click', function (event) {
-		makeAnswer(event.latLng, map);
-	});
+	listener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
 }
 
 function mapOnClick(event) {
@@ -187,9 +185,7 @@ function newGame() {
 	map.setOptions({ draggableCursor: 'crosshair' });
 	map.setCenter({ lat: 0, lng: 0 });
 	map.setZoom(2);
-	listener = google.maps.event.addListener(map, 'click', function (event) {
-		makeAnswer(event.latLng, map);
-	});
+	listener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
 	startGame();
 }
 
