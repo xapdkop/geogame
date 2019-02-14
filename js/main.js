@@ -190,14 +190,14 @@ function newGame() {
 }
 
 function toggleMap() {
-	if (isMap) { // Panorama
+	if (isMap) { // to panorama
 		isMap = false;
 		$('#map').hide();
 		$('#panorama').show();
 		$('#switch').text('Map');
 		$('#answer').hide();
 	}
-	else { // Map
+	else { // to map
 		isMap = true;
 		$('#panorama').hide();
 		$('#map').show();
