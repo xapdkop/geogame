@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 window.onload = () => {
 	pjs();
@@ -17,7 +17,7 @@ var panorama;
 var user_marker = null;
 var right_marker = null;
 var path_line = null;
-var map_switch_flag = false;
+var isMap = false;
 var storage;
 var listener;
 
@@ -182,7 +182,8 @@ function newGame() {
 		right_marker.setMap(null);
 		right_marker = null;
 	}
-	toggleMap();
+	if (isMap)
+		toggleMap();
 	map.setOptions({ draggableCursor: 'crosshair' });
 	map.setCenter({ lat: 0, lng: 0 });
 	map.setZoom(2);
@@ -193,15 +194,15 @@ function newGame() {
 }
 
 function toggleMap() {
-	if (map_switch_flag) { // Panorama
-		map_switch_flag = false;
+	if (isMap) { // Panorama
+		isMap = false;
 		$('#map').hide();
 		$('#panorama').show();
 		$('#switch').text('Map');
 		$('#answer').hide();
 	}
 	else { // Map
-		map_switch_flag = true;
+		isMap = true;
 		$('#panorama').hide();
 		$('#map').show();
 		$('#switch').text('Panorama');
