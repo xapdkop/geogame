@@ -1,51 +1,47 @@
 <!doctype html>
 <html>
-	<head>
-		<title>GeoGame</title>
-		<meta charset="utf-8">
-		<link href="./img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-		<!-- Styles -->
-		<link rel="stylesheet" href="./css/style.css">
-		<!-- Fonts -->
-		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz" rel="stylesheet">
-		<!-- Scripts -->
-		<script src="./js/jquery-3.3.1.js"></script>
-		<script src="./js/particles.js"></script>
-		<script src="./js/pjs.js"></script>
-		<script src="./js/main.js"></script>
-	</head>
-	<body>
-		<main>
-			<div id="ui">
-				<div id="logo">
-					GeoGame
-				</div>
-				<div id="description">
-					Давай исследовать мир!<br>Отправься в путешествие, которое проведет тебя по всему миру -<br>от жарких пустынь Африки до оживленных улиц Парижа.
-				</div>
-				<div id="start-button">
-					<button id="startGame" class="button">
-						Начать игру
-					</button>
-				</div>
+
+<head>
+	<title>GeoGame</title>
+	<meta charset="utf-8">
+	<link href="./img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<!-- Styles -->
+	<link rel="stylesheet" href="./css/style.css">
+	<!-- Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz" rel="stylesheet">
+	<!-- Scripts -->
+	<script src="./js/jquery-3.3.1.js"></script>
+	<script src="./js/particles.js"></script>
+	<script src="./js/pjs.js"></script>
+	<script src="./js/main.js"></script>
+</head>
+
+<body>
+	<main>
+		<div id="ui">
+			<div id="logo">GeoGame</div>
+			<div id="description">
+				Let's explore the world!
+				<br><br>
+				Embark on a journey that will guide you around the world -
+				<br>
+				from the hot deserts of Africa to the busy streets of Paris.
 			</div>
-			<div id="switch" style="display:none;" class="button">
-				Карта
-			</div>
-			<div id="answer" style="display:none;" class="button">
-				Ответить
-			</div>
-			<div id="endGame" style="display:none;">
-				
-			</div>
-			<div id="newGame" style="display:none;" class="button">
-				Новая игра
-			</div>
-			<div id="particles"></div>
-			<div id="map"></div>
-			<div id="panorama" style="display:none;"></div>
-		</main>
-		<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXxUqzGg9wRapZ30K7M4WLrjadJvlMhow&callback=initMap&language=ru"></script>
-	</body>
+			<div id="startGame" class="button">Start the game</div>
+		</div>
+		<div id="switch" style="display:none;" class="button">Map</div>
+		<div id="answer" style="display:none;" class="button">Answer</div>
+		<div id="endGame" style="display:none;">
+
+		</div>
+		<div id="newGame" style="display:none;" class="button">New game</div>
+		<div id="particles"></div>
+		<div id="map"></div>
+		<div id="panorama" style="display:none;"></div>
+	</main>
+	<script async defer
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBXxUqzGg9wRapZ30K7M4WLrjadJvlMhow&callback=initMap"></script>
+</body>
+
 </html>

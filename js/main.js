@@ -3,9 +3,12 @@
 window.onload = () => {
 	pjs();
 
+	$('#panorama').hide();
+	$('#map').show();
 	$('#startGame').on('click', startGame);
 	$('#switch').on('click', toggleMap);
 	$('#answer').on('click', checkAnswer);
+	$('#newGame').on('click', newGame);
 };
 
 var street_view;
@@ -13,6 +16,7 @@ var map;
 var panorama;
 var user_marker = null;
 var right_marker = null;
+var path_line = null;
 var map_switch_flag = false;
 var storage;
 var listener;
@@ -30,6 +34,7 @@ function initMap() {
 		streetViewControl: false,
 		zoomControl: false,
 		mapTypeControl: false,
+		draggableCursor: 'crosshair'
 	});
 
 	panorama = new google.maps.StreetViewPanorama(document.getElementById('panorama'), {
@@ -65,13 +70,7 @@ function startGame() {
 
 	$('#panorama').show();
 	$('#switch').show();
-
-	$('#panorama').css({
-		'z-index': 20
-	});
-	$('#map').css({
-		'z-index': 10
-	});
+	$('#map').hide();
 
 	map.zoomControl = true;
 
@@ -80,9 +79,9 @@ function startGame() {
 
 function generatePoint() {
 	storage = new google.maps.LatLng(randomBetween(-90, 90), randomBetween(-180, 180));
-	street_view.getPanoramaByLocation(new google.maps.LatLng(storage.lat(), storage.lng()), 5000000, function (data, status) {
+	street_view.getPanoramaByLocation(storage, 5000000, function (data, status) {
 		if (status == google.maps.StreetViewStatus.OK) {
-			console.log(data.location);
+			//console.log(data.location);
 			storage = data.location.latLng;
 			panorama.setPano(data.location.pano);
 			panorama.setPov({
@@ -92,7 +91,7 @@ function generatePoint() {
 			panorama.setVisible(true);
 		}
 		else {
-			console.log('Trying again...');
+			//console.log('Trying again...');
 			generatePoint();
 		}
 	});
@@ -102,8 +101,11 @@ function makeAnswer(location, map) {
 	if (!user_marker) {
 		user_marker = new google.maps.Marker({
 			position: location,
-			title: 'Ваш ответ',
-			map: map
+			title: 'Your answer',
+			map: map,
+			icon: {
+				url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+			}
 		});
 	}
 	else {
@@ -115,7 +117,8 @@ function checkAnswer() {
 	if (!user_marker)
 		return;
 
-	//$('#switch').hide();
+	map.setOptions({ draggableCursor: 'default' });
+
 	$('#answer').hide();
 
 	$('#endGame').show();
@@ -124,24 +127,53 @@ function checkAnswer() {
 	listener.remove();
 	var markerPosition = user_marker.getPosition();
 
-	console.log(markerPosition.lat(), markerPosition.lng());
-	console.log(storage.lat(), storage.lng());
-	console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000 + 'km');
+	//console.log(markerPosition.lat(), markerPosition.lng());
+	//console.log(storage.lat(), storage.lng());
+	//console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000 + 'km');
 
-	$('#endGame').text('Ваш ответ в ' + (google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000).toFixed(3) + ' километрах от текущей локации');
+	var distance = Math.round(google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000);
+	var message = null
+
+	if (distance < 1000)
+		message = "Do you use cheats? 🤨";
+	else if (distance < 2500)
+		message = "Good, you're almost right! 😉";
+	else if (distance < 5500)
+		message = "Not bad! 🙂"
+	else if (distance < 12000)
+		message = "You could do better! 😜"
+	else
+		message = "Better luck next time! 🙃"
+
+	$('#endGame').html('<b>' + message + '</b><br>' + "Your answer is " + distance + " km from the real position");
 
 	right_marker = new google.maps.Marker({
 		position: storage,
-		title: 'Загаданое место',
-		map: map
+		title: 'Hidden place',
+		map: map,
+		icon: {
+			url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+		}
 	});
 
-	$('#newGame').on('click', newGame);
+	path_line = new google.maps.Polyline({
+		path: [
+			right_marker.getPosition(), user_marker.getPosition()
+		],
+		strokeColor: "#FF0000",
+		strokeOpacity: 1.0,
+		strokeWeight: 2,
+		map: map
+	});
 }
 
 function newGame() {
 	$('#endGame').hide();
 	$('#newGame').hide();
+	if (path_line) {
+		path_line.setMap(null);
+		path_line = null;
+	}
 	if (user_marker) {
 		user_marker.setMap(null);
 		user_marker = null;
@@ -151,6 +183,9 @@ function newGame() {
 		right_marker = null;
 	}
 	toggleMap();
+	map.setOptions({ draggableCursor: 'crosshair' });
+	map.setCenter({ lat: 0, lng: 0 });
+	map.setZoom(2);
 	listener = google.maps.event.addListener(map, 'click', function (event) {
 		makeAnswer(event.latLng, map);
 	});
@@ -158,27 +193,20 @@ function newGame() {
 }
 
 function toggleMap() {
-	if (map_switch_flag) {
+	if (map_switch_flag) { // Panorama
 		map_switch_flag = false;
-		$('#switch').text('Карта');
-		$('#panorama').css({
-			'z-index': 20
-		});
-		$('#map').css({
-			'z-index': 10
-		});
+		$('#map').hide();
+		$('#panorama').show();
+		$('#switch').text('Map');
 		$('#answer').hide();
 	}
-	else {
+	else { // Map
 		map_switch_flag = true;
-		$('#switch').text('Панорама');
-		$('#panorama').css({
-			'z-index': 10
-		});
-		$('#map').css({
-			'z-index': 20
-		});
-		$('#answer').show();
+		$('#panorama').hide();
+		$('#map').show();
+		$('#switch').text('Panorama');
+		if (!right_marker)
+			$('#answer').show();
 	}
 }
 
