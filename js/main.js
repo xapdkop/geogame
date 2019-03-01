@@ -1,5 +1,16 @@
 ﻿'use strict';
 
+var zoom;
+var streetView;
+var map;
+var panorama;
+var userMarker = null;
+var rightMarker = null;
+var pathLine = null;
+var isMap = false;
+var storage;
+var answerListener;
+
 window.onload = () => {
 	pjs();
 
@@ -11,25 +22,20 @@ window.onload = () => {
 	$('#newGame').on('click', newGame);
 };
 
-var street_view;
-var map;
-var panorama;
-var user_marker = null;
-var right_marker = null;
-var path_line = null;
-var isMap = false;
-var storage;
-var listener;
+window.onresize = () => {
+	if (map) {
+		zoom = $(document).height() <= 1000 ? 2 : Math.ceil($(document).height() / 1000 * 2);
+		map.setZoom(zoom);
+	}
+}
 
 function initMap() {
-	street_view = new google.maps.StreetViewService();
+	streetView = new google.maps.StreetViewService();
 
+	zoom = $(document).height() <= 1000 ? 2 : Math.ceil($(document).height() / 1000 * 2);
 	map = new google.maps.Map(document.getElementById('map'), {
-		center: {
-			lat: 0,
-			lng: 0
-		},
-		zoom: 2,
+		center: randomPoint({min: 0, max: 0}, {min: -180, max: 180}),
+		zoom: zoom,
 		fullscreenControl: false,
 		streetViewControl: false,
 		zoomControl: false,
@@ -52,7 +58,7 @@ function initMap() {
 		fullscreenControl: false,
 	});
 
-	listener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
+	answerListener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
 }
 
 function mapOnClick(event) {
@@ -76,10 +82,9 @@ function startGame() {
 }
 
 function generatePoint() {
-	storage = new google.maps.LatLng(randomBetween(-90, 90), randomBetween(-180, 180));
-	street_view.getPanoramaByLocation(storage, 5000000, function (data, status) {
+	storage = new google.maps.LatLng(randomPoint({min: -90, max: 90}, {min: -180, max: 180}))
+	streetView.getPanoramaByLocation(storage, 5000000, function (data, status) {
 		if (status == google.maps.StreetViewStatus.OK) {
-			//console.log(data.location);
 			storage = data.location.latLng;
 			panorama.setPano(data.location.pano);
 			panorama.setPov({
@@ -89,15 +94,14 @@ function generatePoint() {
 			panorama.setVisible(true);
 		}
 		else {
-			//console.log('Trying again...');
 			generatePoint();
 		}
 	});
 }
 
 function makeAnswer(location, map) {
-	if (!user_marker) {
-		user_marker = new google.maps.Marker({
+	if (!userMarker) {
+		userMarker = new google.maps.Marker({
 			position: location,
 			title: 'Your answer',
 			map: map,
@@ -107,12 +111,12 @@ function makeAnswer(location, map) {
 		});
 	}
 	else {
-		user_marker.setPosition(location);
+		userMarker.setPosition(location);
 	}
 }
 
 function checkAnswer() {
-	if (!user_marker)
+	if (!userMarker)
 		return;
 
 	map.setOptions({ draggableCursor: 'default' });
@@ -122,12 +126,8 @@ function checkAnswer() {
 	$('#endGame').show();
 	$('#newGame').show();
 
-	listener.remove();
-	var markerPosition = user_marker.getPosition();
-
-	//console.log(markerPosition.lat(), markerPosition.lng());
-	//console.log(storage.lat(), storage.lng());
-	//console.log(google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000 + 'km');
+	answerListener.remove();
+	var markerPosition = userMarker.getPosition();
 
 	var distance = Math.round(google.maps.geometry.spherical.computeDistanceBetween(markerPosition, storage) / 1000);
 	var message = null
@@ -145,7 +145,7 @@ function checkAnswer() {
 
 	$('#endGame').html('<b>' + message + '</b><br>' + "Your answer is " + distance + " km from the real position");
 
-	right_marker = new google.maps.Marker({
+	rightMarker = new google.maps.Marker({
 		position: storage,
 		title: 'Hidden place',
 		map: map,
@@ -154,38 +154,42 @@ function checkAnswer() {
 		}
 	});
 
-	path_line = new google.maps.Polyline({
+	pathLine = new google.maps.Polyline({
 		path: [
-			right_marker.getPosition(), user_marker.getPosition()
+			rightMarker.getPosition(), userMarker.getPosition()
 		],
 		strokeColor: "#FF0000",
 		strokeOpacity: 1.0,
 		strokeWeight: 2,
 		map: map
 	});
+
+	map.panTo(rightMarker.getPosition());
+	var tmpZoom = Math.log2(Math.trunc(20000 / distance) + 1);
+	map.setZoom(tmpZoom < zoom ? zoom : tmpZoom);
 }
 
 function newGame() {
 	$('#endGame').hide();
 	$('#newGame').hide();
-	if (path_line) {
-		path_line.setMap(null);
-		path_line = null;
+	if (pathLine) {
+		pathLine.setMap(null);
+		pathLine = null;
 	}
-	if (user_marker) {
-		user_marker.setMap(null);
-		user_marker = null;
+	if (userMarker) {
+		userMarker.setMap(null);
+		userMarker = null;
 	}
-	if (right_marker) {
-		right_marker.setMap(null);
-		right_marker = null;
+	if (rightMarker) {
+		rightMarker.setMap(null);
+		rightMarker = null;
 	}
 	if (isMap)
 		toggleMap();
 	map.setOptions({ draggableCursor: 'crosshair' });
-	map.setCenter({ lat: 0, lng: 0 });
-	map.setZoom(2);
-	listener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
+	map.setCenter(randomPoint({min: 0, max: 0}, {min: -180, max: 180}));
+	map.setZoom(zoom);
+	answerListener = google.maps.event.addListener(map, 'click', event => makeAnswer(event.latLng, map));
 	startGame();
 }
 
@@ -202,11 +206,14 @@ function toggleMap() {
 		$('#panorama').hide();
 		$('#map').show();
 		$('#switch').text('Panorama');
-		if (!right_marker)
+		if (!rightMarker)
 			$('#answer').show();
 	}
 }
 
-function randomBetween(min, max) {
-	return Math.random() * (max - min + 1) + min;
+function randomPoint(latRange, lngRange) {
+	return {
+		lat: Math.random() * (latRange.max - latRange.min + 1) + latRange.min,
+		lng: Math.random() * (lngRange.max - lngRange.min + 1) + lngRange.min
+	}
 }
